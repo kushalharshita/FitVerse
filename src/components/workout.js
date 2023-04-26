@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState , useEffect } from 'react';
 import {
   TextField,
   Button,
@@ -9,7 +9,16 @@ import {
   Box,
   Typography,
   Grid,
+  
 } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { addWorkout , selectWorkouts } from './workouts/workoutSlice';
+import { db, auth } from '../firebase';
+
+import { collection, addDoc, onSnapshot, query, where } from "firebase/firestore";
+import { Link } from 'react-router-dom';
+
+
 
 const Workout = () => {
   const [form, setForm] = useState({
@@ -18,12 +27,11 @@ const Workout = () => {
     description: '',
     duration: '',
     category: '',
-    sequence: '',
-    image: '',
     rest_time: '',
   });
 
-  
+  const workouts = useSelector(selectWorkouts);
+  const dispatch = useDispatch();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -33,10 +41,96 @@ const Workout = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+
+
+  // useEffect(() => {
+    
+  //   const q = query(collection(db, "workouts") );
+  //   const unsub = onSnapshot(q, (querySnapshot) => {
+  //     let todosArray = [];
+  //     console.log(querySnapshot);
+  //     querySnapshot.forEach((doc) => {
+  //       const envDetail = { ...doc.data(), id: doc.id };
+  //       todosArray.push(envDetail);
+  //       dispatch(addWorkout(envDetail));
+  //     });
+  //   });
+  //   renderEnvironments();
+  // },[]);
+
+
+  useEffect(() => {
+    const q = query(collection(db, "workouts"));
+    const unsub = onSnapshot(q, (querySnapshot) => {
+      let todosArray = [];
+      console.log(querySnapshot);
+      querySnapshot.forEach((doc) => {
+        const envDetail = { ...doc.data(), id: doc.id };
+        todosArray.push(envDetail);
+      });
+      dispatch(addWorkout(todosArray));
+    });
+    return unsub;
+  }, []);
+  
+
+
+  const handleSubmit = async(event) => {
     event.preventDefault();
     console.log('Form data:', form);
     // TODO: Submit form data to backend
+    try {
+      const docRef = await addDoc(collection(db, 'workouts'), form);
+      console.log('Document written with ID: ', docRef.id);
+      setForm({
+        eid: '',
+        name: '',
+        description: '',
+        duration: '',
+        category: '',
+        rest_time: '',
+      });
+    } catch (e) {
+      console.error('Error adding document: ', e);
+    }
+  };
+
+  const renderEnvironments = () => {
+   
+
+    if (workouts.length === 0) {
+      return <Typography variant="subtitle1">No environments to display</Typography>;
+    }
+
+    return workouts.map((environment) => (
+      <Box key={environment.id} sx={{ border: '1px solid grey', borderRadius: '5px', p: 2, mb: 2 }}>
+        <Grid container justifyContent="space-between">
+          <Grid item xs={8}>
+            <Typography variant="h6">{environment.name}</Typography>
+            <Link to={`/fitnessroutine/${environment.id}`}>Go to Fitness Routine</Link>
+          </Grid>
+        
+        </Grid>
+        <Typography variant="body1" sx={{ my: 1 }}>{environment.description}</Typography>
+        <Grid container justifyContent="space-between">
+          <Grid item xs={3}>
+            <Typography variant="body2">Duration</Typography>
+            <Typography variant="body1">{environment.duration}</Typography>
+          </Grid>
+          <Grid item xs={3}>
+            <Typography variant="body2">Category</Typography>
+            <Typography variant="body1">{environment.category}</Typography>
+          </Grid>
+          <Grid item xs={3}>
+            <Typography variant="body2">Rest Time</Typography>
+            <Typography variant="body1">{environment.rest_time}</Typography>
+          </Grid>
+          
+        </Grid>
+       
+    
+      </Box>
+    ));
   };
 
   return (
@@ -50,13 +144,12 @@ const Workout = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color:'white',
+        color: 'white',
       }}
     >
       <Box
         sx={{
-          backgroundColor: 'rgba(255,255,255,0.8)',
-          backgroundImage: `url('https://images.unsplash.com/photo-1434719079929-f61498a4828e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=874&q=80')`,
+          
           borderRadius: '1rem',
           padding: '2rem',
           maxWidth: '800px',
@@ -75,11 +168,99 @@ const Workout = () => {
                 name="name"
                 label="Name"
                 variant="outlined"
-                
+
                 fullWidth
                 value={form.name}
                 onChange={handleChange}
                 sx={{
+                  '& .MuiInputLabel-root': {
+                    color: 'white',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&.Mui-focused .MuiInputLabel-root': {
+                    color: 'white',
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="description"
+                label="Description"
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={4}
+                value={form.description}
+                onChange={handleChange}
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: 'white',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&.Mui-focused .MuiInputLabel-root': {
+                    color: 'white',
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                name="duration"
+                label="Duration"
+                variant="outlined"
+                fullWidth
+                value={form.duration}
+                onChange={handleChange}
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: 'white',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'white',
+                  },
+                  '&.Mui-focused .MuiInputLabel-root': {
+                    color: 'white',
+                  },
+                }}
+              />
+            </Grid>
+
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel sx={{ color: 'white' }} id="category-label">
+                  Category
+                </InputLabel>
+                <Select
+                  name="category"
+                  labelId="category-label"
+                  value={form.category}
+                  onChange={handleChange}
+                  label="Category"
+                  sx={{
                     '& .MuiInputLabel-root': {
                       color: 'white',
                     },
@@ -90,158 +271,38 @@ const Workout = () => {
                       borderColor: 'white',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                    }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  name="description"
-                  label="Description"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={form.description}
-                  onChange={handleChange}
-                  sx={{
-                      '& .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                    }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  name="duration"
-                  label="Duration"
-                  variant="outlined"
-                  fullWidth
-                  value={form.duration}
-                  onChange={handleChange}
-                  sx={{
-                      '& .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                    }}
-                />
-              </Grid>
-              {/* <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="category-label">Category</InputLabel>
-                  <Select
-                    name="category"
-                    labelId="category-label"
-                    value={form.category}
-                    onChange={handleChange}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: 'white',
-                      },
-                      '&.Mui-focused .MuiInputLabel-root': {
-                        color: 'white',
-                      },
-                    }}
-                  >
-                    <MenuItem value="cardio">Cardio</MenuItem>
-                    <MenuItem value="strength">Strength</MenuItem>
-                    <MenuItem value="flexibility">Flexibility</MenuItem>
-                    <MenuItem value="balance">Balance</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid> */}
-  
-  <Grid item xs={12} sm={6}>
-    <FormControl fullWidth>
-      <InputLabel sx={{ color: 'white' }} id="category-label">
-        Category
-      </InputLabel>
-      <Select
-        name="category"
-        labelId="category-label"
-        value={form.category}
-        onChange={handleChange}
-        label="Category"
-        sx={{
-          '& .MuiInputLabel-root': {
-            color: 'white',
-          },
-          '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'white',
-          },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'white',
-          },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'white',
-          },
-          '&.Mui-focused .MuiInputLabel-root': {
-            color: 'white',
-          },
-          '& .MuiSelect-icon': {
-              color: 'white',
-            },
-            '&:after': {
-              borderBottomColor: 'white',
-            },
-        }}
-      >
-        <MenuItem value="cardio">Cardio</MenuItem>
-        <MenuItem value="strength">Strength</MenuItem>
-        <MenuItem value="flexibility">Flexibility</MenuItem>
-        <MenuItem value="balance">Balance</MenuItem>
-      </Select>
-    </FormControl>
-  </Grid>
-  
-              <Grid item xs={12}>
+                      borderColor: 'white',
+                    },
+                    '&.Mui-focused .MuiInputLabel-root': {
+                      color: 'white',
+                    },
+                    '& .MuiSelect-icon': {
+                      color: 'white',
+                    },
+                    '&:after': {
+                      borderBottomColor: 'white',
+                    },
+                  }}
+                >
+                  <MenuItem value="cardio">Cardio</MenuItem>
+                  <MenuItem value="strength">Strength</MenuItem>
+                  <MenuItem value="flexibility">Flexibility</MenuItem>
+                  <MenuItem value="balance">Balance</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+
+
+            <Grid item xs={12}>
               <TextField
-              name="sequence"
-              label="Sequence"
-              variant="outlined"
-              fullWidth
-              multiline
-              rows={4}
-              value={form.sequence}
-              onChange={handleChange}
-              sx={{
+                name="rest_time"
+                label="Rest Time"
+                variant="outlined"
+                fullWidth
+                value={form.rest_time}
+                onChange={handleChange}
+                sx={{
                   '& .MuiInputLabel-root': {
                     color: 'white',
                   },
@@ -258,77 +319,39 @@ const Workout = () => {
                     color: 'white',
                   },
                 }}
-            />
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button variant="contained" color="primary" fullWidth type="submit">
+                Create Workout
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button variant="contained" color="secondary" fullWidth>
+                Cancel
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              name="image"
-              label="Image URL"
-              variant="outlined"
-              fullWidth
-              value={form.image}
-              onChange={handleChange}
-              sx={{
-                  '& .MuiInputLabel-root': {
-                    color: 'white',
-                  },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'white',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'white',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'white',
-                  },
-                  '&.Mui-focused .MuiInputLabel-root': {
-                    color: 'white',
-                  },
-                }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              name="rest_time"
-              label="Rest Time"
-              variant="outlined"
-              fullWidth
-              value={form.rest_time}
-              onChange={handleChange}
-              sx={{
-                  '& .MuiInputLabel-root': {
-                    color: 'white',
-                  },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'white',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'white',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'white',
-                  },
-                  '&.Mui-focused .MuiInputLabel-root': {
-                    color: 'white',
-                  },
-                }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Button variant="contained" color="primary" fullWidth type="submit">
-              Create Workout
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Button variant="contained" color="secondary" fullWidth>
-              Cancel
-            </Button>
-          </Grid>
-        </Grid>
+        </Box>
+        {
+        renderEnvironments()
+      }
       </Box>
+     
     </Box>
-  </Box>
+
   );
-  };
-  
-  export default Workout;
+};
+
+export default Workout;
+
+
+
+
+        
+        
+        
+        
+        
+        
+        

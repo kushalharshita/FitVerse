@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Grid,
   Box,
@@ -11,26 +12,31 @@ import {
   Typography,
 } from '@mui/material';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import {
+  addEnvironment,
+  loadEnvironments,
+  selectEnvironments,
+  selectEnvironmentStatus,
+} from '../components/environments/environmentSlice';
 import { db, auth } from '../firebase';
-import { collection, addDoc } from "firebase/firestore";
-import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-
-
-
-
+import { signOut } from 'firebase/auth';
+import { collection, addDoc, onSnapshot, query, where } from "firebase/firestore";
+import { Link, useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 
 const WorkoutEnvironmentForm = ({ onSubmit }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [time, setTime] = useState('');
   const [weekDay, setWeekDay] = useState('');
-  // const [userId, setUserId] = useState('');
-  // const [image, setImage] = useState('');
   const [restTime, setRestTime] = useState('');
+ 
   const [user, setUser] = useState(null);
+  const [todoArray, setTodoArray] = useState([]);
 
-  
+  const environments = useSelector(selectEnvironments);
+  const environmentStatus = useSelector(selectEnvironmentStatus);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -41,86 +47,171 @@ const WorkoutEnvironmentForm = ({ onSubmit }) => {
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
-        if(!user){
-            navigate("/");
-        }
-    })
-  }, [])
-  
-  const navigate = useNavigate();
+      if (!user) {
+        navigate('/');
+      }
+    });
+  }, []);
 
+  useEffect(() => {
+    // getENvironmemnts();
+    const q = query(collection(db, "environments") );
+    const unsub = onSnapshot(q, (querySnapshot) => {
+      let todosArray = [];
+      console.log(querySnapshot);
+      querySnapshot.forEach((doc) => {
+        const envDetail = { ...doc.data(), id: doc.id };
+        todosArray.push(envDetail);
+        dispatch(addEnvironment(envDetail));
+      });
+    });
+    renderEnvironments();
+  },[]);
+
+  // const getENvironmemnts = () => {
+  //   const q = query(collection(db, "environments"));
+  //   const unsub = onSnapshot(q, (querySnapshot) => {
+  //     let todosArray = [];
+  //     console.log(querySnapshot);
+  //     querySnapshot.forEach((doc) => {
+  //       const envDetail = { ...doc.data(), id: doc.id };
+  //       todosArray.push(envDetail);
+  //       dispatch(addEnvironment(envDetail));
+  //     });
+   
+  //   });
+  // }
+
+  // const getENvironmemnts = () => {
+  //   const q = query(collection(db, "environments"), where("userId", "==", user.uid));
+  //   const unsub = onSnapshot(q, (querySnapshot) => {
+  //     let todosArray = [];
+  //     console.log(querySnapshot);
+  //     querySnapshot.forEach((doc) => {
+  //       const envDetail = { ...doc.data(), id: doc.id };
+  //       todosArray.push(envDetail);
+  //       dispatch(addEnvironment(envDetail));
+  //     });
+  //   });
+  // };
+
+  // const getENvironmemnts = () => {
+    
+  // };
+
+  
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     try {
-      // Add a new document with the form data
+     
       const docRef = await addDoc(collection(db, "environments"), {
-        userId:user.uid,
+        userId: user.uid,
         name,
         description,
         time,
         weekDay,
         restTime,
       });
-  
+
       
       console.log("Document written with ID: ", docRef.id);
       navigate("/dashboard");
-      
-      if (onSubmit) {
-        onSubmit();
-        
-      }
-      
+      const newEnvironment = {
+        name,
+        description,
+        time,
+        weekDay,
+        restTime,
+        createdBy: user.uid,
+      };
 
+      
+      setName('');
+      setDescription('');
+      setTime('');
+      setWeekDay('');
+      setRestTime('');
+      onSubmit();
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error(error);
     }
   };
-  
-
-  const handleAlbum = () => {
-    navigate("/album");
-};
-
-const handleEnvironments = () => {
-  navigate("/displayEnvironments");
-};
-
-
-const handleSignOut = () => {
-  signOut(auth)
-  .then(() => {
-      navigate("/");
-  })
-  .catch((err) => {
-      alert(err.message);
-  });
-};
 
   
-return (
-    // <Box p={2} 
-    // // bgcolor="#f5f5f5"
+
+  const renderEnvironments = () => {
+   
+
+    if (environments.length === 0) {
+      return <Typography variant="subtitle1">No environments to display</Typography>;
+    }
+
+    return environments.map((environment) => (
+      <Box key={environment.id} sx={{ border: '1px solid grey', borderRadius: '5px', p: 2, mb: 2 }}>
+        <Grid container justifyContent="space-between">
+          <Grid item xs={8}>
+            <Typography variant="h6">{environment.name}</Typography>
+            <Link to={`/workout/${environment.id}`}>Go to workout</Link>
+          </Grid>
+        
+        </Grid>
+        <Typography variant="body1" sx={{ my: 1 }}>{environment.description}</Typography>
+        <Grid container justifyContent="space-between">
+          <Grid item xs={3}>
+            <Typography variant="body2">Time</Typography>
+            <Typography variant="body1">{environment.time}</Typography>
+          </Grid>
+          <Grid item xs={3}>
+            <Typography variant="body2">Weekday</Typography>
+            <Typography variant="body1">{environment.weekDay}</Typography>
+          </Grid>
+          <Grid item xs={3}>
+            <Typography variant="body2">Rest Time</Typography>
+            <Typography variant="body1">{environment.restTime}</Typography>
+          </Grid>
+          <Grid item xs={3} container justifyContent="flex-end" alignItems="center">
+            <FitnessCenterIcon sx={{ fontSize: 40, color: 'grey' }} />
+          </Grid>
+        </Grid>
+        <Box sx={{ border: '1px solid grey', borderRadius: '5px', p: 2, mb: 2 }}>
     
-    // >
+  <Link to="/fit">Explore me</Link>
+</Box>
+    
+      </Box>
+    ));
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
 
     <Box
-    p={2}
-    bgcolor="white"
-    style={{
-    //   backgroundImage: "url('https://completewellbeing.com/wp-content/uploads/2016/09/mind-your-own-fitness-1.jpg')",
-      backgroundSize: 'cover',
-    }}
-  >
+      p={2}
+      bgcolor="white"
+      style={{
+        //   backgroundImage: "url('https://completewellbeing.com/wp-content/uploads/2016/09/mind-your-own-fitness-1.jpg')",
+        backgroundSize: 'cover',
+      }}
+    >
       <Grid container spacing={2} justifyContent="center" >
         <Grid item xs={12} md={8}>
           <Box style={{
-      backgroundImage: "url('https://t4.ftcdn.net/jpg/05/27/14/91/360_F_527149176_ywgMPpNrKBNRJz1fBoDf306eMnOhn0JC.jpg')",
-      backgroundSize: 'cover',
-    }}   borderRadius={8} p={3}>
-          {/* bgcolor="white" */}
+            backgroundImage: "url('https://t4.ftcdn.net/jpg/05/27/14/91/360_F_527149176_ywgMPpNrKBNRJz1fBoDf306eMnOhn0JC.jpg')",
+            backgroundSize: 'cover',
+          }} borderRadius={8} p={3}>
+            {/* bgcolor="white" */}
             <Box mb={3}>
               <Typography variant="h4" component="h1" align="center">
                 <FitnessCenterIcon fontSize="large" />
@@ -191,33 +282,30 @@ return (
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary" fullWidth >
+                  <Button type="submit" variant="contained" color="primary" fullWidth>
                     Create
                   </Button>
                 </Grid>
+               
                 <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary" fullWidth onClick={handleAlbum}>
-                    Check out our Media
-                  </Button>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary" fullWidth onClick={handleEnvironments}>
+                  <Button type="submit" variant="contained" hidden="true" color="primary" fullWidth >
                     All Environments
                   </Button>
                 </Grid>
                 <Grid item xs={12}>
-                  <Button type="submit" variant="contained" color="primary" fullWidth onClick={handleSignOut}>
+                  <Button type="submit" hidden="true" variant="contained" color="primary" fullWidth onClick={handleSignOut}>
                     Sign Out
                   </Button>
                 </Grid>
               </Grid>
             </form>
+          {renderEnvironments()}
+
           </Box>
         </Grid>
       </Grid>
     </Box>
   )
-  };
-
+};
 export default WorkoutEnvironmentForm;
 

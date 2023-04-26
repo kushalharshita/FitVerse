@@ -1,154 +1,250 @@
+// import React, { useState } from 'react'
+// import { Grid,Paper, Avatar, TextField, Button, Typography, Box, IconButton, Divider, Chip } from '@mui/material'
+// import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+// import CallIcon from '@mui/icons-material/Call';
+// import GoogleIcon from '@mui/icons-material/Google';
+// import { Link } from "react-router-dom";
+// import { auth, provider } from "../firebase";
+// import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+// import { useNavigate } from "react-router-dom";
 
 
-import React, { useState } from 'react'
-import { Grid,Paper, Avatar, TextField, Button, Typography, Box, IconButton, Divider, Chip } from '@mui/material'
+// const Login=()=>{
+
+//     const paperStyle={padding :20,height:'80vh',width:280, margin:"20px auto"}
+//     const avatarStyle={backgroundColor:'#1bbd7e'}
+//     const btnstyle={margin:'8px 0'}
+
+//     const [email, setEmail] = useState("");
+//     const [password, setPassword] = useState("");
+//     const navigate = useNavigate();
+
+//     const handleEmailChange = (e) => {
+//         setEmail(e.target.value);
+//     };
+//     const handlePasswordChange = (e) => {
+//         setPassword(e.target.value);
+//     };
+
+//     const handleGoogleSignIn = () => {
+//         signInWithPopup(auth, provider)
+//           .then((data) => {
+//             // Handle successful authentication
+//             localStorage.setItem("email", data.user.email)
+//             navigate("/dashboard");
+//           }).catch((error) => {
+//             // Handle errors
+//             console.log(error.message);
+//         });
+//     };
+
+//     const handleEmailSignIn = (email, password) => {
+//         signInWithEmailAndPassword(auth, email, password)
+//           .then((userCredential) => {
+//             // Handle successful authentication
+//             const user = userCredential.user;
+//             // localStorage.setItem("email", user.email);
+//             console.log(user);
+//             console.log("Signed In");
+//             navigate("/dashboard");
+//           })
+//           .catch((error) => {
+//             // Handle errors
+//             console.log(error.message);
+//         });
+//     };
+
+
+//     return(
+//         <Grid>
+//             <Paper elevation={10} style={paperStyle}>
+//                 <Grid align='center'>
+//                      <Avatar style={avatarStyle}><LockOutlinedIcon/></Avatar>
+//                     <h2>Sign In</h2>
+//                 </Grid>
+//                 <TextField value={email} label='Username' placeholder='Enter email' type='email' fullWidth required onChange={handleEmailChange} />
+//                 <TextField value={password} label='Password' placeholder='Enter password' type='password' fullWidth required onChange={handlePasswordChange} />
+                
+//                 <Button type='submit' color='primary' variant="contained" style={btnstyle} fullWidth onClick={() => handleEmailSignIn(email, password)}>Sign in</Button>
+                
+//                 <Divider>
+//                 <Chip label="OR" />
+//                 </Divider>
+//                 <Box textAlign='center'>
+//                 <IconButton>
+//                 <Button variant="outlined" startIcon={<GoogleIcon />} onClick={handleGoogleSignIn}>
+//                     Sign In with Google
+//                 </Button>
+//                 </IconButton>
+//                 <Link to="/phoneauth">
+//                 <IconButton>
+//                 <Button variant="outlined" startIcon={<CallIcon />}>
+//                     Sign In with Phone Number
+//                 </Button>
+//                 </IconButton>
+//                 </Link>
+//                 </Box>
+
+//                 <Typography >
+//                      <Link href="#" >
+//                         Forgot password ?
+//                 </Link>
+//                 </Typography>
+//                 <Typography > Do you have an account ? 
+//                 <Link to="/signup">
+//                     Sign Up
+//                 </Link>
+//                 </Typography>
+//             </Paper>
+//         </Grid>
+//     )
+// }
+
+// export default Login
+
+import React, { useState } from 'react';
+import { Grid, Paper, Avatar, TextField, Button, Typography, Box, IconButton, Divider, Chip } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CallIcon from '@mui/icons-material/Call';
 import GoogleIcon from '@mui/icons-material/Google';
-import { Link } from "react-router-dom";
-import { auth, provider } from "../firebase";
-import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { getUser, getUserFailure , getUserSuccess } from './store/users/users';
+import { Link } from 'react-router-dom';
+import { auth, provider } from '../firebase';
+import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
-import { useSelector, useDispatch} from 'react-redux';
+const Login = () => {
+  const paperStyle = {
+    padding: 20,
+    height: 'auto',
+    width: 350,
+    margin: '20px auto',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+  const avatarStyle = { backgroundColor: '#1bbd7e' };
+  const btnstyle = { margin: '8px 0' };
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
 
-const Login=()=>{
+  const handleGoogleSignIn = () => {
+    signInWithPopup(auth, provider)
+      .then((data) => {
+        // Handle successful authentication
+        localStorage.setItem('email', data.user.email);
+        navigate('/dashboard');
+      })
+      .catch((error) => {
+        // Handle errors
+        console.log(error.message);
+      });
+  };
 
-   
-   const loading = useSelector(state=>state.user.loading)
-   const error = useSelector(state=>state.user.error)
+  const handleEmailSignIn = (email, password) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Handle successful authentication
+        const user = userCredential.user;
+        // localStorage.setItem("email", user.email);
+        console.log(user);
+        console.log('Signed In');
+        navigate('/dashboard');
+      })
+      .catch((error) => {
+        // Handle errors
+        console.log(error.message);
+      });
+  };
 
+  return (
+    <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+      <Paper elevation={10} style={paperStyle}>
+        <Grid align="center">
+          <Avatar style={avatarStyle}>
+            <LockOutlinedIcon />
+          </Avatar>
+          <Typography variant="h5" gutterBottom>
+            Sign In
+          </Typography>
+        </Grid>
+        <Box sx={{ width: '100%', marginBottom: 2 }}>
+          <TextField
+            value={email}
+            label="Username"
+            placeholder="Enter email"
+            type="email"
+            fullWidth
+            required
+            onChange={handleEmailChange}
+          />
+        </Box>
+        <Box sx={{ width: '100%', marginBottom: 2 }}>
+          <TextField
+            value={password}
+            label="Password"
+            placeholder="Enter password"
+            type="password"
+            fullWidth
+            required
+            onChange={handlePasswordChange}
+          />
+        </Box>
+        <Button
+          type="submit"
+          color="primary"
+          variant="contained"
+          style={btnstyle}
+          fullWidth
+          onClick={() => handleEmailSignIn(email, password)}
+        >
+          Sign In
+        </Button>
+        {/* <Typography variant="subtitle2" gutterBottom>
+          Don't have an account?&nbsp;
+          <Link to="/signup">Sign Up</Link>
+        </Typography> */}
 
-    const paperStyle={padding :20,height:'80vh',width:280, margin:"20px auto"}
-    const avatarStyle={backgroundColor:'#1bbd7e'}
-    const btnstyle={margin:'8px 0'}
-
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
-
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-    };
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-    };
-     
-    const dispatch = useDispatch();
-    // const handleGoogleSignIn = () => { 
-    //     dispatch(getUser());
-    //     signInWithPopup(auth, provider)
-    //       .then((data) => { 
-    //         console.log(data);
-    //         dispatch(getUserSuccess(data.user));
-    //         
-    //         localStorage.setItem("email", data.user.email)
-            
-    //       }).catch((error) => { 
-    //         dispatch(getUserFailure());
-    //         
-    //         console.log(error.message);
-
-    //     });
-    // };
-
-    const handleGoogleSignIn = () => { 
-        dispatch(getUser());
-        signInWithPopup(auth, provider)
-            .then((data) => { 
-                console.log(data);
-                const { user } = data;
-                dispatch(getUserSuccess({
-                    uid: user.uid,
-                    displayName: user.displayName,
-                    email: user.email,
-                    photoURL: user.photoURL
-                }));
-                
-                localStorage.setItem("email", user.email)
-            })
-            .catch((error) => { 
-                dispatch(getUserFailure());
-                
-                console.log(error.message);
-            });
-    };
-    
-
-    const handleEmailSignIn = (email, password) => {
-        dispatch(getUser());
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {  
-            dispatch(getUserSuccess(userCredential.user));
-            // Handle successful authentication
-            const user = userCredential.user;
-            // localStorage.setItem("email", user.email);
-            console.log(user);
-            console.log("Signed In");
-            navigate("/dashboard");
-          })
-          .catch((error) => {
-            // Handle errors
-            dispatch(getUserFailure());
-            console.log(error.message);
-            console.log(error);
-            console.log(loading);
-        });
-    };
-
-
-    return(
-        <Grid>
-            <Paper elevation={10} style={paperStyle}>
-            <Grid align='center'>
-                     <h2>Loading:{loading}</h2>
-                </Grid>
-                <Grid>      
-                      <h2>error:{error}</h2>
-                </Grid>
-                <Grid align='center'>
-                     <Avatar style={avatarStyle}><LockOutlinedIcon/></Avatar>
-                    <h2>Sign In</h2>
-                </Grid>
-                <TextField value={email} label='Username' placeholder='Enter email' type='email' fullWidth required onChange={handleEmailChange} />
-                <TextField value={password} label='Password' placeholder='Enter password' type='password' fullWidth required onChange={handlePasswordChange} />
-                
-                <Button type='submit' color='primary' variant="contained" style={btnstyle} fullWidth onClick={() => handleEmailSignIn(email, password)}>Sign in</Button>
-                
-                <Divider>
-                <Chip label="OR" />
-                </Divider>
-                <Box textAlign='center'>
-                
-                <Button variant="outlined" startIcon={<GoogleIcon />} onClick={handleGoogleSignIn}>
-                    Sign In with Google
-                </Button>
-                
-                <Link to="/phoneauth">
-                
-                <Button variant="outlined" startIcon={<CallIcon />}>
-                    Sign In with Phone Number
-                </Button>
-                
-                </Link>
-                </Box>
-
-                <Typography >
-                     <Link href="#" >
-                        Forgot password ?
-                </Link>
-                </Typography>
-                <Typography > Do you have an account ? 
+<Typography > Do you have an account ? 
                 <Link to="/signup">
                     Sign Up
-                </Link>
+                 </Link>
                 </Typography>
-            </Paper>
-        </Grid>
-    )
-}
+        <Divider sx={{ my: 2 }}>or</Divider>
+        {/* <IconButton onClick={handleGoogleSignIn} sx={{ mx , 2 }> */}
+        <IconButton onClick={handleGoogleSignIn} sx={{ marginLeft: 2, marginRight: 2 }}>
+<GoogleIcon />
+</IconButton>
+<Typography variant="subtitle2" gutterBottom>
+Sign In with Google
+</Typography>
+<Chip
+icon={<CallIcon />}
+label="Phone"
+clickable
+color="primary"
+variant="outlined"
+sx={{ mt: 2 }}
+/>
+</Paper>
+</Grid>
+);
+};
 
-export default Login
+export default Login;
+
+
+
+
+
+
+
